@@ -211,10 +211,13 @@ documentsCleaned.forEach((document: string) => {
   });
 });
 
+
+// Mostrar los resultados de TF
 let documentsTFTables : Object[] = [];
 for (let i = 0; i < documentsCleaned.length; i++) {
   let name :string = `Document ${i}`
   let result2 : Object[] = [];
+  let aux : Object = {};
   getTF(documentsCleaned[i]).forEach((value: [number, string, number]) => {
     let aux : Object = { // creo un objeto auxiliar con dos propiedades (term y tf)
       Term: value[1],
@@ -223,21 +226,29 @@ for (let i = 0; i < documentsCleaned.length; i++) {
     result2.push(aux);
   });
   documentsTFTables.push(result2);
-
 }
+console.log('\x1b[32m%s\x1b[0m', 'TF');
 documentsTFTables.slice().reverse().forEach((value: Object, index) => {
-  console.log(`Document ${index}`)
+  // color rojo
+  console.log('\x1b[31m%s\x1b[0m', `Document ${index}`);
   console.table(value);
 });
 
 
+// Mostrar los resultados de IDF
+let result2 : Object = {};
+getIDF(documentsCleaned).forEach((value: [string, number]) => {
+  let aux : Object = { // creo un objeto auxiliar con dos propiedades (term y tf)
+    [value[0]]: value[1],
+  }
+  result2 = Object.assign(result2, aux);
+});
 
+console.log('\n')
+console.log('\x1b[32m%s\x1b[0m', 'IDF');
+console.table(result2);
 
-
-
-
-
-// Compare each pair of documents
+// Comparación de cosenos
 let result : Object = {};
 for (let i = 0; i < documentsCleaned.length; i += 2) {
   let name :string = `Document ${i} - Document ${i + 1}`
@@ -248,4 +259,7 @@ for (let i = 0; i < documentsCleaned.length; i += 2) {
 }
 
 // Console table with the results of the comparison of each pair of documents
+// Create space between the tables and the results
+console.log('\n')
+console.log('\x1b[32m%s\x1b[0m', 'Cosine Similarity');
 console.table(result)
