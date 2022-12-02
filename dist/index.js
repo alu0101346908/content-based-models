@@ -85,8 +85,8 @@ function getTF(document) {
     // Calculamos el TF
     let termsFilteredMapArray = Array.from(termsFilteredMap);
     let termsFilteredMapArraySorted = termsFilteredMapArray.sort((a, b) => b[1] - a[1]);
-    //let termsFilteredMapArraySortedTF: [string, number][] = termsFilteredMapArraySorted.map((term: [string, number]) => [term[0], term[1] / termsFiltered.length]);
-    return termsFilteredMapArraySorted;
+    let termsFilteredMapArraySortedTF = termsFilteredMapArraySorted.map((term, index) => [index, term[0], term[1] / termsFiltered.length]);
+    return termsFilteredMapArraySortedTF;
 }
 // Función that calculates the Inverse Document Frequency
 function getIDF(documents) {
@@ -112,6 +112,95 @@ function getIDF(documents) {
     let termsFilteredMapArraySortedIDF = termsFilteredMapArraySorted.map((term) => [term[0], Math.log(documents.length / term[1])]);
     return termsFilteredMapArraySortedIDF;
 }
+// Función para el cálculo del TF-IDF
+function getTFIDF(documents) {
+    let terms = [];
+    documents.forEach((document) => {
+        terms = terms.concat(document.split(' '));
+    });
+    let termsFilteredMap = new Map();
+    // Contamos el número de veces que aparece cada término
+    terms.map((term) => {
+        if (termsFilteredMap.has(term)) {
+            if (typeof termsFilteredMap.get(term) == 'number') {
+                termsFilteredMap.set(term, termsFilteredMap.get(term) + 1);
+            }
+        }
+        else {
+            termsFilteredMap.set(term, 1);
+        }
+    });
+    // Calculamos el IDF
+    let termsFilteredMapArray = Array.from(termsFilteredMap);
+    let termsFilteredMapArraySorted = termsFilteredMapArray.sort((a, b) => b[1] - a[1]);
+    let termsFilteredMapArraySortedIDF = termsFilteredMapArraySorted.map((term) => [term[0], Math.log(documents.length / term[1])]);
+    // Calculamos el TF-IDF
+    let termsFilteredMapArraySortedTFIDF = termsFilteredMapArraySortedIDF.map((term) => [term[0], term[1] * termsFilteredMap.get(term[0])]);
+    return termsFilteredMapArraySortedTFIDF;
+}
+// Calculate the cosine similarity between two documents
+function getCosineSimilarity(document1, document2) {
+    let terms1 = document1.split(' ');
+    let terms2 = document2.split(' ');
+    let terms1Filtered = terms1.filter((term) => term !== '');
+    let terms2Filtered = terms2.filter((term) => term !== '');
+    let terms1FilteredMap = new Map();
+    let terms2FilteredMap = new Map();
+    // Contamos el número de veces que aparece cada término
+    terms1Filtered.map((term) => {
+        if (terms1FilteredMap.has(term)) {
+            if (typeof terms1FilteredMap.get(term) == 'number') {
+                terms1FilteredMap.set(term, terms1FilteredMap.get(term) + 1);
+            }
+        }
+        else {
+            terms1FilteredMap.set(term, 1);
+        }
+    });
+    terms2Filtered.map((term) => {
+        if (terms2FilteredMap.has(term)) {
+            if (typeof terms2FilteredMap.get(term) == 'number') {
+                terms2FilteredMap.set(term, terms2FilteredMap.get(term) + 1);
+            }
+        }
+        else {
+            terms2FilteredMap.set(term, 1);
+        }
+    });
+    // Calculamos el TF
+    let terms1FilteredMapArray = Array.from(terms1FilteredMap);
+    let terms1FilteredMapArraySorted = terms1FilteredMapArray.sort((a, b) => b[1] - a[1]);
+    let terms1FilteredMapArraySortedTF = terms1FilteredMapArraySorted.map((term) => [term[0], term[1] / terms1Filtered.length]);
+    let terms2FilteredMapArray = Array.from(terms2FilteredMap);
+    let terms2FilteredMapArraySorted = terms2FilteredMapArray.sort((a, b) => b[1] - a[1]);
+    let terms2FilteredMapArraySortedTF = terms2FilteredMapArraySorted.map((term) => [term[0], term[1] / terms2Filtered.length]);
+    // Calculamos el IDF
+    let terms1FilteredMapArraySortedIDF = terms1FilteredMapArraySortedTF.map((term) => [term[0], Math.log(2 / term[1])]);
+    let terms2FilteredMapArraySortedIDF = terms2FilteredMapArraySortedTF.map((term) => [term[0], Math.log(2 / term[1])]);
+    // Calculamos el TF-IDF
+    let terms1FilteredMapArraySortedTFIDF = terms1FilteredMapArraySortedIDF.map((term) => [term[0], term[1] * terms1FilteredMap.get(term[0])]);
+    let terms2FilteredMapArraySortedTFIDF = terms2FilteredMapArraySortedIDF.map((term) => [term[0], term[1] * terms2FilteredMap.get(term[0])]);
+    // Calculamos el producto escalar
+    let dotProduct = 0;
+    terms1FilteredMapArraySortedTFIDF.forEach((term) => {
+        terms2FilteredMapArraySortedTFIDF.forEach((term2) => {
+            if (term[0] === term2[0]) {
+                dotProduct += term[1] * term2[1];
+            }
+        });
+    });
+    // Calculamos la norma de los vectores
+    let norm1 = 0;
+    terms1FilteredMapArraySortedTFIDF.forEach((term) => {
+        norm1 += term[1] * term[1];
+    });
+    let norm2 = 0;
+    terms2FilteredMapArraySortedTFIDF.forEach((term) => {
+        norm2 += term[1] * term[1];
+    });
+    // Calculamos la similitud coseno
+    return dotProduct / Math.sqrt(norm1) * Math.sqrt(norm2);
+}
 // Programa principal
 let documents = readFromFile('documents/documents-01.txt');
 let documentsCleaned = [];
@@ -125,5 +214,31 @@ documentsCleaned.forEach((document) => {
         TF.push(value);
     });
 });
-// console.log(TF);
-console.log(getIDF(documentsCleaned));
+let documentsTFTables = [];
+for (let i = 0; i < documentsCleaned.length; i++) {
+    let name = `Document ${i}`;
+    let result2 = [];
+    getTF(documentsCleaned[i]).forEach((value) => {
+        let aux = {
+            Term: value[1],
+            TF: value[2],
+        };
+        result2.push(aux);
+    });
+    documentsTFTables.push(result2);
+}
+documentsTFTables.slice().reverse().forEach((value, index) => {
+    console.log(`Document ${index}`);
+    console.table(value);
+});
+// Compare each pair of documents
+let result = {};
+for (let i = 0; i < documentsCleaned.length; i += 2) {
+    let name = `Document ${i} - Document ${i + 1}`;
+    let aux = {
+        [name]: getCosineSimilarity(documentsCleaned[i], documentsCleaned[i + 1]),
+    };
+    result = Object.assign(result, aux);
+}
+// Console table with the results of the comparison of each pair of documents
+console.table(result);
