@@ -25,6 +25,7 @@ Los resultados se presentan en tablas por documentos salvo por los valores de ID
 
 1. Clonar el repositorio.
 2. Situarse en la raiz del proyecto.
-3. Realizar un npm run build.
-4. Ejecutar con "node .dist/index.js -f [DocumentFile] -s [StopWordsFile] -c [CorpusFile]". Ejemplo: node ./dist/index.js -f ./documents/documents.txt -s ./stop-words/stop-words.txt -c ./corpus/corpus.txt
+3. Instalar las dependencias con npm i.
+4. Realizar un npm run build.
+5. Ejecutar con "node .dist/index.js -f [DocumentFile] -s [StopWordsFile] -c [CorpusFile]". Ejemplo: node ./dist/index.js -f ./documents/documents.txt -s ./stop-words/stop-words.txt -c ./corpus/corpus.txt
 ?. Ejectuar con -h para la ayuda.
