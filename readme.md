@@ -29,6 +29,6 @@ Los resultados se presentan en tablas por documentos salvo por los valores de ID
 4. Realizar un npm run build.
 5. Ejecutar con "node .dist/index.js -f [DocumentFile] -s [StopWordsFile] -c [CorpusFile]". 
 
-?. Ejemplo: node ./dist/index.js -f ./documents/documents.txt -s ./stop-words/stop-words.txt -c ./corpus/corpus.txt.
+?. Ejemplo: node ./dist/index.js -f ./documents/documents-01.txt -s ./stop-words/stop-words-en.txt -c ./corpus/corpus-en.txt.
 
 ?. Ejectuar con -h para la ayuda.
