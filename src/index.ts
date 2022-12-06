@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-
+import { exit } from 'process';
 
 // Read file from path
 function readFromFile(path: string): string[] {
@@ -119,9 +119,9 @@ function getTFIDF(documents: string[]): [string, number][] {
           termsFilteredMap.set(term, termsFilteredMap.get(term) as number + 1);
       }
     } else {
-      termsFilteredMap.set(term, 1);
+      termsFilteredMap.set(term, 1); 
     }
-  });
+  }); 
   // Calculamos el IDF
   let termsFilteredMapArray: [string, number][] = Array.from(termsFilteredMap);
   let termsFilteredMapArraySorted: [string, number][] = termsFilteredMapArray.sort((a: [string, number], b: [string, number]) => b[1] - a[1]);
@@ -130,7 +130,6 @@ function getTFIDF(documents: string[]): [string, number][] {
   let termsFilteredMapArraySortedTFIDF: [string, number][] = termsFilteredMapArraySortedIDF.map((term: [string, number]) => [term[0], term[1] * (termsFilteredMap.get(term[0]) as number)]);
   return termsFilteredMapArraySortedTFIDF;
 }
-
 
 
 // Calculate the cosine similarity between two documents
@@ -192,16 +191,54 @@ function getCosineSimilarity(document1: string, document2: string): number {
     norm2 += term[1] * term[1];
   });
   // Calculamos la similitud coseno
-  return dotProduct / Math.sqrt(norm1) * Math.sqrt(norm2);
+  return dotProduct / Math.sqrt(norm1) * Math.sqrt(norm2); 
 }
 
 
+/* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
+console.log("===== Welcome to the content-based document analysis program =====")
+if(process.argv[2] == "-h") {
+  console.log("To run the program correctly \nnode ./index.js -f [DocumentsFile] -s [StopWordsFile] -c [CorpusFile]");
+  console.log("Exiting....");
+  exit();
+}
+
+let documentsFile: string = "";
+let stopWordsFile: string = "";
+let corpusFile: string = "";
+if(process.argv.length < 8){
+  console.log("Passed arguments are lesser than expected")
+  console.log("node ./index.js -f [DocumentsFile] -s [StopWordsFile] -c [CorpusFile]");
+  exit();
+}
+else {
+  documentsFile = process.argv[3];
+  stopWordsFile = process.argv[5];
+  corpusFile = process.argv[7];
+}
+
+//comprobar si existen los ficheros
+if (!fs.existsSync(documentsFile)) {
+  console.log("The documents file does not exist");
+  exit();
+}
+
+if (!fs.existsSync(stopWordsFile)) {
+  console.log("The stop words file does not exist");
+  exit();
+}
+
+if (!fs.existsSync(corpusFile)) {
+  console.log("The corpus file does not exist");
+  exit();
+}
 
 // Programa principal
-let documents: string[] = readFromFile('documents/documents-01.txt');
+let documents: string[] = readFromFile(documentsFile);
 let documentsCleaned: string[] = [];
 documents.forEach((document: string) => {
-    let documentSplit = cleanDocument(document, 'stop-words/stop-words-en.txt','corpus/corpus-en.txt')
+    let documentSplit = cleanDocument(document, stopWordsFile, corpusFile)
     documentsCleaned.push(documentSplit);
 });
 let TF: [number, string, number][] = [];
@@ -210,7 +247,6 @@ documentsCleaned.forEach((document: string) => {
     TF.push(value);
   });
 });
-
 
 // Mostrar los resultados de TF
 let documentsTFTables : Object[] = [];
@@ -228,12 +264,11 @@ for (let i = 0; i < documentsCleaned.length; i++) {
   documentsTFTables.push(result2);
 }
 console.log('\x1b[32m%s\x1b[0m', 'TF');
-documentsTFTables.slice().reverse().forEach((value: Object, index) => {
+documentsTFTables.slice().forEach((value: Object, index) => {
   // color rojo
   console.log('\x1b[31m%s\x1b[0m', `Document ${index}`);
   console.table(value);
 });
-
 
 // Mostrar los resultados de IDF
 let result2 : Object = {};
@@ -247,6 +282,22 @@ getIDF(documentsCleaned).forEach((value: [string, number]) => {
 console.log('\n')
 console.log('\x1b[32m%s\x1b[0m', 'IDF');
 console.table(result2);
+
+
+// Mostrar los resultados de TF-IDF
+let result3 : Object = {};
+getTFIDF(documentsCleaned).forEach((value: [string, number]) => {
+  let aux : Object = { // creo un objeto auxiliar con dos propiedades (term y tf)
+    [value[0]]: value[1],
+  }
+  result3 = Object.assign(result3, aux);
+});
+
+console.log('\n')
+console.log('\x1b[32m%s\x1b[0m', 'TF-IDF');
+console.table(result3);
+
+
 
 // Comparación de cosenos
 let result : Object = {};

@@ -24,6 +24,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = __importStar(require("fs"));
+const process_1 = require("process");
 // Read file from path
 function readFromFile(path) {
     const file = fs.readFileSync(path, 'utf8');
@@ -201,11 +202,44 @@ function getCosineSimilarity(document1, document2) {
     // Calculamos la similitud coseno
     return dotProduct / Math.sqrt(norm1) * Math.sqrt(norm2);
 }
+/* --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+console.log("===== Welcome to the content-based document analysis program =====");
+if (process.argv[2] == "-h") {
+    console.log("To run the program correctly \nnode ./index.js -f [DocumentsFile] -s [StopWordsFile] -c [CorpusFile]");
+    console.log("Exiting....");
+    (0, process_1.exit)();
+}
+let documentsFile = "";
+let stopWordsFile = "";
+let corpusFile = "";
+if (process.argv.length < 8) {
+    console.log("Passed arguments are lesser than expected");
+    console.log("node ./index.js -f [DocumentsFile] -s [StopWordsFile] -c [CorpusFile]");
+    (0, process_1.exit)();
+}
+else {
+    documentsFile = process.argv[3];
+    stopWordsFile = process.argv[5];
+    corpusFile = process.argv[7];
+}
+//comprobar si existen los ficheros
+if (!fs.existsSync(documentsFile)) {
+    console.log("The documents file does not exist");
+    (0, process_1.exit)();
+}
+if (!fs.existsSync(stopWordsFile)) {
+    console.log("The stop words file does not exist");
+    (0, process_1.exit)();
+}
+if (!fs.existsSync(corpusFile)) {
+    console.log("The corpus file does not exist");
+    (0, process_1.exit)();
+}
 // Programa principal
-let documents = readFromFile('documents/documents-01.txt');
+let documents = readFromFile(documentsFile);
 let documentsCleaned = [];
 documents.forEach((document) => {
-    let documentSplit = cleanDocument(document, 'stop-words/stop-words-en.txt', 'corpus/corpus-en.txt');
+    let documentSplit = cleanDocument(document, stopWordsFile, corpusFile);
     documentsCleaned.push(documentSplit);
 });
 let TF = [];
@@ -230,7 +264,7 @@ for (let i = 0; i < documentsCleaned.length; i++) {
     documentsTFTables.push(result2);
 }
 console.log('\x1b[32m%s\x1b[0m', 'TF');
-documentsTFTables.slice().reverse().forEach((value, index) => {
+documentsTFTables.slice().forEach((value, index) => {
     // color rojo
     console.log('\x1b[31m%s\x1b[0m', `Document ${index}`);
     console.table(value);
@@ -246,6 +280,17 @@ getIDF(documentsCleaned).forEach((value) => {
 console.log('\n');
 console.log('\x1b[32m%s\x1b[0m', 'IDF');
 console.table(result2);
+// Mostrar los resultados de TF-IDF
+let result3 = {};
+getTFIDF(documentsCleaned).forEach((value) => {
+    let aux = {
+        [value[0]]: value[1],
+    };
+    result3 = Object.assign(result3, aux);
+});
+console.log('\n');
+console.log('\x1b[32m%s\x1b[0m', 'TF-IDF');
+console.table(result3);
 // Comparación de cosenos
 let result = {};
 for (let i = 0; i < documentsCleaned.length; i += 2) {

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc-watch --onSuccess \"node ./dist/index.js\""
+    "dev": "tsc-watch --onSuccess \"node ./dist/index.js -f ./documents/documents-03.txt -s ./stop-words/stop-words-en.txt -c ./corpus/corpus-en.txt \"",
+    "build": "tsc --build"
   },
   "author": "",
   "license": "ISC",
